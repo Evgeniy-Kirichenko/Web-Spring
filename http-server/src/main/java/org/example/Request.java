@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 public class Request {
     private final String method;
@@ -21,6 +19,7 @@ public class Request {
     }
 
     public static Request fromInputStream(InputStream in) throws IOException {
+
         var reader = new BufferedReader(new InputStreamReader(in));//
         final var requestLine = reader.readLine();//читаем входящую строку
         final var parts = requestLine.split(" "); // парсим на три части 0 часть - метод, 1 - запрашиваемый файл
