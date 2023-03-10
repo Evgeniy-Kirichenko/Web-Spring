@@ -43,7 +43,7 @@ public class Server {
              final var in = socket.getInputStream();
              final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
-            final var request = Request.fromInputStream(in);//обрабатываем строку запроса
+            final var request = Request.fromInputStream(in, out);//обрабатываем строку запроса
             final String method = request.getMethod(); //выделяем Method
             if (method == null) {//если метода нет, то выводим сообщение об ошибке
                 notFound.handle(request, out);
