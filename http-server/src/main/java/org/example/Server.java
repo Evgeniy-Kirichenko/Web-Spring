@@ -1,6 +1,7 @@
 package org.example;
-
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,20 +41,19 @@ public class Server {
 
     private void connection(Socket socket) {
         try (socket;
-             final var in = socket.getInputStream();
+             final var in = new BufferedInputStream(socket.getInputStream());
              final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
             final var request = Request.fromInputStream(in, out);//обрабатываем строку запроса
             final String method = request.getMethod(); //выделяем Method
             if (method == null) {//если метода нет, то выводим сообщение об ошибке
-                notFound.handle(request, out);
+                badRequest.handle(request, out);
                 return;//и выходим из соединения
             }
 
             final String path = request.getPath(); // выделяем имя файла
             if (path == null && !validPaths.contains(path)) { //если файла нет, то выводим сообщение об ошибке
-                System.out.println("Зашли в  if (path == null && validPaths.contains(path)");
-                notFound.handle(request, out);
+                badRequest.handle(request, out);
                 return; //и выходим из соединения
             }
             /*
@@ -78,7 +78,7 @@ public class Server {
         handlers.get(method).put(path, handler);
     }
 
-    private final Handler notFound = (request, out) -> {
+    private final Handler badRequest = (request, out) -> {
         /*
         обрабочик при ошибках
          */
