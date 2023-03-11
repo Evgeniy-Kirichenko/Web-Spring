@@ -66,7 +66,7 @@ public class Request {
         if (pathQuerySplit.length > 1) {
             path = pathQuerySplit[0];
             var queryString = pathQuerySplit[1];
-            parse.addAll(URLEncodedUtils.parse(queryString, Charset.defaultCharset()));
+            parse.addAll(URLEncodedUtils.parse(queryString, Charset.defaultCharset(),'&'));
         } else path = pathQuery;
 
         // ищем заголовки
