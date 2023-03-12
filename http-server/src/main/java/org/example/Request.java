@@ -66,13 +66,14 @@ public class Request {
         if (pathQuerySplit.length > 1) {
             path = pathQuerySplit[0];
             var queryString = pathQuerySplit[1];
-            parse.addAll(URLEncodedUtils.parse(queryString, Charset.defaultCharset()));
+            parse.addAll(URLEncodedUtils.parse(queryString, Charset.defaultCharset(), '&'));
         } else path = pathQuery;
 
         // ищем заголовки
         final var headersDelimiter = new byte[]{'\r', '\n', '\r', '\n'};
         final var headersStart = requestLineEnd + requestLineDelimiter.length;
         final var headersEnd = indexOf(buffer, headersDelimiter, headersStart, read);
+        //  System.out.printf("Длинна буфера %d, конец headers %d \n",read,headersEnd);
         if (headersEnd == -1) {
             return null;
         }
