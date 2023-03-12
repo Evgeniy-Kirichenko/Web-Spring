@@ -105,11 +105,8 @@ public class Request {
         return query;
     }
 
-    public NameValuePair getQueryParams(String name) {
-        for (int i = 0; i < query.size(); i++) {
-            if (query.get(i).getName().equals(name)) return query.get(i);
-        }
-        return null;
+    public String getQueryParams(String name) {
+    return query.stream().filter(o -> o.getName().equals(name)).map(o -> o.getValue()).findFirst().get();
     }
 
 
