@@ -38,7 +38,6 @@ public class Main {
             try {
                 final var filePath = Path.of(".", "http-server/public", request.getPath());
                 final var mimeType = Files.probeContentType(filePath);
-                System.out.println("events.html: " + request.getPath());
                 final var content = Files.readAllBytes(filePath);
                 out.write((
                         "HTTP/1.1 200 OK\r\n" +

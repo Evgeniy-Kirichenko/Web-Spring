@@ -15,17 +15,20 @@ public class Request {
     private final String path;
     private List<NameValuePair> query;
     private List<String> headers;
+    private List<NameValuePair> postParam;
 
     public static final String GET = "GET";
     public static final String POST = "POST";
 
 
-    public Request(String method, InputStream body, String path, List<NameValuePair> query, List<String> headers) {
+    public Request(String method, InputStream body, String path, List<NameValuePair> query,
+                   List<String> headers, List<NameValuePair> postParam) {
         this.method = method;
         this.body = body;
         this.path = path;
         this.query = query;
         this.headers = headers;
+        this.postParam = postParam;
     }
 
     public static Request fromInputStream(BufferedInputStream in, BufferedOutputStream out) throws IOException {
@@ -81,12 +84,32 @@ public class Request {
         in.reset();
         // пропускаем requestLine
         in.skip(headersStart);
-
+        //читаем заголовки
         final var headersBytes = in.readNBytes(headersEnd - headersStart);
-        final var headers = Arrays.asList(new String(headersBytes).split("\r\n"));//
+        //преобразуем в коллекцию заголовков
+        final var headers = Arrays.asList(new String(headersBytes).split("\r\n"));
 
 
-        return new Request(method, in, path, parse, headers);
+        List<NameValuePair> postParam = new ArrayList<>();
+        // для GET тела нет
+        //читаем тело запроса
+        if (!method.equals(GET)) {
+            in.skip(headersDelimiter.length);
+            // вычитываем Content-Length, чтобы прочитать body
+            final var contentLength = extractHeader(headers, "Content-Length");
+            if (contentLength.isPresent()) {
+                final var length = Integer.parseInt(contentLength.get());
+                final var bodyBytes = in.readNBytes(length);
+
+                final var enctype = extractHeader(headers, "Content-Type");
+                if (enctype.equals("aplication/x-www-form-urlencoded")) {
+                    String postParamStrin = new String(bodyBytes);
+                    postParam.addAll(URLEncodedUtils.parse(postParamStrin, Charset.defaultCharset(), '&'));
+                }
+            }
+        }
+
+        return new Request(method, in, path, parse, headers, postParam);
     }
 
     public String getMethod() {
@@ -106,9 +129,15 @@ public class Request {
     }
 
     public String getQueryParams(String name) {
-    return query.stream().filter(o -> o.getName().equals(name)).map(o -> o.getValue()).findFirst().get();
+        return query.stream().filter(o -> o.getName().equals(name)).map(NameValuePair::getValue).findFirst().get();
     }
 
+    public List<NameValuePair> getPostParam() {
+        return postParam;
+    }
+    public String getPostParams(String name) {
+        return postParam.stream().filter(o -> o.getName().equals(name)).map(NameValuePair::getValue).findFirst().get();
+    }
 
     // from google guava with modifications
     private static int indexOf(byte[] array, byte[] target, int start, int max) {
